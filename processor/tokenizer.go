@@ -1,29 +1,30 @@
-package internal
+package processor
 
 func isPunctuation(c rune) bool {
 	switch c {
-	case '.', ',', ';', ':':
+	case '.', ',', ';', ':', '!', '?':
 		return true
 	}
 	return false
+
 }
 
 func Tokenize(text string) []string {
 	var result []string
 	runes := []rune(text)
 	word := ""
-	IsInsideBrackecks := false
+	insideBrackeks := false
 	//IsInsideQuote := false
 
 	for i := 0; i < len(runes); i++ {
 		char := runes[i]
 		switch {
-		case IsInsideBrackecks:
+		case insideBrackeks:
 			word += string(char)
 			if char == ')' {
 				result = append(result, word)
 				word = ""
-				IsInsideBrackecks = false
+				insideBrackeks = false
 				continue
 			}
 		case char == '(':
@@ -32,7 +33,7 @@ func Tokenize(text string) []string {
 				word = ""
 			}
 			word += string(char)
-			IsInsideBrackecks = true
+			insideBrackeks = true
 			continue
 		case char == '\'':
 			if word != "" {
@@ -46,12 +47,18 @@ func Tokenize(text string) []string {
 				result = append(result, word)
 				word = ""
 			}
+			continue
 		case isPunctuation(char):
 			if word != "" {
 				result = append(result, word)
 				word = ""
 			}
-			result = append(result, string(char))
+			start := i
+			for i+1 < len(runes) && runes[i+1] == char {
+				i++
+			}
+			token := string(runes[start : i+1])
+			result = append(result, token)
 			continue
 		default:
 			word += string(char)
