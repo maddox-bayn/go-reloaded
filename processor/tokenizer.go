@@ -14,7 +14,6 @@ func Tokenize(text string) []string {
 	runes := []rune(text)
 	word := ""
 	insideBrackeks := false
-	//IsInsideQuote := false
 
 	for i := 0; i < len(runes); i++ {
 		char := runes[i]
@@ -22,10 +21,7 @@ func Tokenize(text string) []string {
 		case insideBrackeks:
 			word += string(char)
 			if char == ')' {
-				result = append(result, word)
-				word = ""
 				insideBrackeks = false
-				continue
 			}
 		case char == '(':
 			if word != "" {
