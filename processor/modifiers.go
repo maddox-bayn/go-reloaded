@@ -1,52 +1,74 @@
 package processor
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 )
 
-func ApplyModifiers(token []string) []string {
-	for i := 0; i < len(token); i++ {
-		switch {
-		case token[i] == "(hex)" && i < 0:
-			num, err := strconv.ParseInt(token[i-1], 16, 64)
-			if err != nil {
-				continue
-			}
-			token[i-1] = fmt.Sprintf("%d", num)
-			token = append(token[:i], token[i+1:]...)
-		case token[i] == "(bin)" && i > 0:
-			num, err := strconv.ParseInt(token[i-1], 2, 64)
-			if err != nil {
-				continue
-			}
-			token[i-1] = fmt.Sprintf("%d", num)
-			token = append(token[:i], token[i+1:]...)
-		case token[i] == "(up)" && i < 0:
-			token[i-1] = strings.ToUpper(token[i-1])
-			token = append(token[:i], token[i+1:]...)
-		case token[i] == "(low)" && i < 0:
-			token[i+1] = strings.ToLower(token[i+1])
-			token = append(token[:i], token[i+1:]...)
-		case token[i] == "(cap)" && i > 0:
-			rstr := []rune(token[i-1])
-			if rstr[0] >= 'a' && rstr[0] <= 'z' {
-				rstr[0] = rstr[0] - 32
-				token[i-1] = string(rstr)
-			}
-			token = append(token[:i], token[i+1:]...)
-		case token[i] == ("up, 2"):
-			for t := i - 1; t >= 0; t-- {
-				str := token[t]
-				str = strings.ToUpper(str)
-				token[t] = str
-				if t < 2 {
-					break
+// ["this","is","great","(up,2)"]
+
+func ApplyModifiers(tokens []string) []string {
+	for i := 0; i < len(tokens); i++ {
+		token := tokens[i]
+		if strings.HasPrefix(token, "(") && strings.HasSuffix(token, ")") {
+
+			content := token[1 : len(token)-1]
+
+			part := strings.Split(content, ",")
+
+			cmd := strings.TrimSpace(part[0])
+
+			count := 1
+
+			if len(part) > 1 {
+
+				n, err := strconv.Atoi(strings.TrimSpace(part[1]))
+				if err == nil {
+					count = n
 				}
 			}
-			token = append(token[:i], token[i+1:]...)
+			switch cmd {
+			case "hex":
+				if i > 0 {
+					num, err := strconv.ParseInt(tokens[i-1], 16, 64)
+					if err == nil {
+						tokens[i-1] = strconv.FormatInt(num, 10)
+					}
+
+				}
+				//tokens = append(tokens[:i], tokens[i+1:]...)
+			case "bin":
+				if i > 0 {
+					num, err := strconv.ParseInt(tokens[i-1], 2, 64)
+					if err == nil {
+						tokens[i-1] = strconv.FormatInt(num, 10)
+					}
+					// -tokens = append(tokens[:i], tokens[i+1:]...)
+				}
+			case "up":
+				for j := 1; j <= count && i-j >= 0; j++ {
+					tokens[i-j] = strings.ToUpper(tokens[i-j])
+					//tokens = append(tokens[:i], tokens[i+1:]...)
+				}
+			case "low":
+				for j := 1; j <= count && i-j >= 0; j++ {
+					tokens[i-j] = strings.ToLower(tokens[i-j])
+					//okens = append(tokens[:i], tokens[i-1:]...)
+				}
+			case "cap":
+				for j := 1; j <= count && i-j >= 0; j++ {
+					rstr := []rune(tokens[i-j])
+					if len(rstr) > 0 && rstr[0] >= 'a' && rstr[0] <= 'z' {
+						rstr[0] -= 32
+					}
+					tokens[i-j] = string(rstr)
+					//tokens = append(tokens[:i], tokens[i+1:]...)
+				}
+			}
+			tokens = append(tokens[:i], tokens[i+1:]...)
+			i--
 		}
+
 	}
-	return token
+	return tokens
 }
