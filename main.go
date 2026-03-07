@@ -12,6 +12,6 @@ func main() {
 		c := processor.Tokenize(a)
 		fmt.Println(processor.ApplyModifiers(c))
 	*/
-	b := []string{"boy", "is", "man", "A", ""}
-	fmt.Println(processor.FixArticles(b))
+	b := []string{"boy", ",", "is", "man", ".", "A", "guy"}
+	fmt.Println(processor.Rebuild(b))
 }
