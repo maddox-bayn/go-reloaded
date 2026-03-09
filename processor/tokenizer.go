@@ -21,6 +21,7 @@ func Tokenize(text string) []string {
 		case insideBrackeks:
 			word += string(char)
 			if char == ')' {
+
 				insideBrackeks = false
 			}
 		case char == '(':
@@ -50,7 +51,7 @@ func Tokenize(text string) []string {
 				word = ""
 			}
 			start := i
-			for i+1 < len(runes) && runes[i+1] == char {
+			for i+1 < len(runes) && isPunctuation(runes[i+1]) {
 				i++
 			}
 			token := string(runes[start : i+1])

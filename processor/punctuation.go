@@ -1,25 +1,42 @@
 package processor
 
-func Punctuation(c string) bool {
+import (
+	"strings"
+)
+
+func Punctuation(c rune) bool {
 	switch c {
-	case ".", ",", "?", ":", ";":
+	case '.', ',', ';', ':', '!', '?':
 		return true
 	}
 	return false
+
 }
 
 func Rebuild(tokens []string) string {
-	result := tokens[0]
-	if len(tokens) == 0 {
-		return ""
-	}
-	for i := 1; i < len(tokens); i++ {
-		//result += tokens[i]
-		if Punctuation(tokens[i]) {
-			result += tokens[i]
-		} else {
-			result += " " + tokens[i]
+	insideQuote := false
+	var r strings.Builder
+
+	for i, token := range tokens {
+
+		if token == "'" {
+			if insideQuote == false {
+				r.WriteString(" ")
+				r.WriteString("'")
+				insideQuote = true
+				continue
+			}
+			r.WriteString("'")
+			insideQuote = false
+			continue
 		}
+
+		if i > 0 && !Punctuation(rune(token[0])) && token != "'" && tokens[i-1] != "'" {
+			r.WriteString(" ")
+
+		}
+		r.WriteString(token)
+
 	}
-	return result
+	return r.String()
 }
