@@ -17,43 +17,18 @@ func Punctuation(c string) bool {
 }
 
 func Rebuild(tokens []string) string {
-	insideQuote := false
+	var b strings.Builder
 
-	var r strings.Builder
-	prev := ""
+	for i, token := range tokens {
 
-	for _, token := range tokens {
-		if token == "" {
-			continue
+		if i > 0 &&
+			!Punctuation(token) &&
+			token != "'" &&
+			tokens[i-1] != "'" {
+
+			b.WriteRune(' ')
 		}
-
-		if prev != "" {
-			switch {
-			case Punctuation(token):
-
-			case isQuote(token) && !insideQuote:
-				if !Punctuation(prev) {
-					r.WriteRune(' ')
-				}
-
-			case insideQuote:
-
-			case isQuote(token) && insideQuote:
-
-			case prev == "'" && !insideQuote:
-				r.WriteRune(' ')
-
-			default:
-				r.WriteRune(' ')
-			}
-		}
-		r.WriteString(token)
-		prev = token
-
-		if isQuote(token) {
-			insideQuote = !insideQuote
-		}
-
+		b.WriteString(token)
 	}
-	return r.String()
+	return b.String()
 }
