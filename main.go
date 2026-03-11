@@ -33,11 +33,10 @@ func main() {
 		result += "\n"
 	}
 
-	err = os.WriteFile(outputfile, []byte(result), 0644)
+	err = os.WriteFile(outputfile, []byte(result+"\n"), 0644)
 
 	if err != nil {
 		fmt.Println("Error writing file", err)
 		return
 	}
-
 }
