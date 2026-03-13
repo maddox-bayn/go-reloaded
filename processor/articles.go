@@ -15,7 +15,7 @@ func FixArticles(tokens []string) []string {
 			if len(nextWord) == 0 {
 				continue
 			}
-			if strings.ContainsRune("aeiouhAEIOUH", []rune(nextWord)[0]) {
+			if strings.ContainsRune("aeiouhAEIOUH", rune(nextWord[0])) {
 
 				if tokens[i] == "a" {
 					tokens[i] = "an"
