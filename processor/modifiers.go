@@ -56,7 +56,6 @@ func ApplyModifiers(tokens []string) []string {
 				case "low":
 					tokens[j] = strings.ToLower(tokens[j])
 				case "cap":
-					fmt.Println(tokens[j])
 					tokens[j] = strings.ToUpper(tokens[j][:1]) + strings.ToLower(tokens[j][1:])
 				}
 			}
