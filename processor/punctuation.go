@@ -4,10 +4,12 @@ import (
 	"strings"
 )
 
-func isQuote(s string) bool {
+// helper function to check if string is a qoute
+func isQoute(s string) bool {
 	return s == "'"
 }
 
+// helper function to check the project specified punction
 func Punctuation(c string) bool {
 	switch rune(c[0]) {
 	case '.', ',', ';', ':', '!', '?':
@@ -16,24 +18,31 @@ func Punctuation(c string) bool {
 	return false
 }
 
+// Rebuild the tokens into a string of transformed and modified text
+
 func Rebuild(tokens []string) string {
-	insideQuote := false
+
 	var b strings.Builder
 
-	for i, token := range tokens {
+	insideQoute := false
 
-		if i > 0 &&
-			!Punctuation(token) &&
-			!(token == "'" && insideQuote) &&
-			!(tokens[i-1] == "'" && insideQuote) {
+	for i := 0; i < len(tokens); i++ {
+		token := tokens[i]
+		if i-1 >= 0 {
 
-			b.WriteRune(' ')
+			isClosingQoute := token == "'" && insideQoute
+			isprevOpenQoute := tokens[i-1] == "'" && insideQoute
+
+			if !Punctuation(token) && !isClosingQoute && !isprevOpenQoute {
+				b.WriteRune(' ')
+			}
+
 		}
-		b.WriteString(token)
 
-		if token == "'" {
-			insideQuote = !insideQuote
+		if isQoute(token) {
+			insideQoute = !insideQoute
 		}
+		b.WriteString(tokens[i])
 	}
 	return b.String()
 }
