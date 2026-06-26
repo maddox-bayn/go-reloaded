@@ -2,6 +2,7 @@ package processor
 
 import "strings"
 
+// fixarticles uses correct article to formate tokens
 func FixArticles(tokens []string) []string {
 
 	for i := 0; i < len(tokens); i++ {
