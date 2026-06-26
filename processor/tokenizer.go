@@ -1,5 +1,7 @@
 package processor
 
+import "strings"
+
 func isPunctuation(c rune) bool {
 	switch c {
 	case '.', ',', ';', ':', '!', '?':
@@ -9,46 +11,55 @@ func isPunctuation(c rune) bool {
 
 }
 
+// take the text as string and tokenize it into slice of string
+// tokenizatoin works seperate modifiers, punctuation (,.?!;:) and also handle single quote
 func Tokenize(text string) []string {
 	var result []string
 	runes := []rune(text)
-	word := ""
-	insideBrackeks := false
+	var tempStr strings.Builder
+	insideBracket := false
 
 	for i := 0; i < len(runes); i++ {
 		char := runes[i]
 		switch {
-		case insideBrackeks:
-			word += string(char)
+		case insideBracket:
+			tempStr.WriteRune(char)
 			if char == ')' {
 
-				insideBrackeks = false
+				insideBracket = false
+				if tempStr.Len() != 0 {
+					result = append(result, tempStr.String())
+					tempStr.Reset()
+				}
 			}
-		case char == '(':
-			if word != "" {
-				result = append(result, word)
-				word = ""
-			}
-			word += string(char)
-			insideBrackeks = true
 			continue
+		case char == '(':
+			if tempStr.Len() != 0 {
+				result = append(result, tempStr.String())
+				tempStr.Reset()
+			}
+			tempStr.WriteRune(char)
+			insideBracket = true
+			continue
+			// handle single as a string
 		case char == '\'':
-			if word != "" {
-				result = append(result, word)
-				word = ""
+			if tempStr.Len() != 0 {
+				result = append(result, tempStr.String())
+				tempStr.Reset()
 			}
 			result = append(result, "'")
 			continue
 		case char == ' ':
-			if word != "" {
-				result = append(result, word)
-				word = ""
+			if tempStr.Len() != 0 {
+				result = append(result, tempStr.String())
+				tempStr.Reset()
 			}
 			continue
+			// handle punctuation and group punctuation as single string
 		case isPunctuation(char):
-			if word != "" {
-				result = append(result, word)
-				word = ""
+			if tempStr.Len() != 0 {
+				result = append(result, tempStr.String())
+				tempStr.Reset()
 			}
 			start := i
 			for i+1 < len(runes) && isPunctuation(runes[i+1]) {
@@ -58,14 +69,13 @@ func Tokenize(text string) []string {
 			result = append(result, token)
 			continue
 		default:
-			word += string(char)
+			tempStr.WriteRune(char)
 		}
 
 	}
-
-	if word != "" {
-		result = append(result, word)
-		//word = ""
+	if tempStr.Len() != 0 {
+		result = append(result, tempStr.String())
+		tempStr.Reset()
 	}
 	return result
 }
