@@ -1,15 +1,19 @@
 package processor
 
 import (
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
 )
 
-// ["this","is","great","(up,2)"]
-
+// apply modificatoin to text using modifier provided in the text
 func ApplyModifiers(tokens []string) []string {
+	// a write index to mark transition
+	writeIndex := 0
 	for i := 0; i < len(tokens); i++ {
 		token := tokens[i]
+		// capturing modifier
 		if strings.HasPrefix(token, "(") && strings.HasSuffix(token, ")") {
 
 			content := token[1 : len(token)-1]
@@ -20,55 +24,47 @@ func ApplyModifiers(tokens []string) []string {
 
 			count := 1
 
+		//  when count is provided in modifier
 			if len(part) > 1 {
-
 				n, err := strconv.Atoi(strings.TrimSpace(part[1]))
-				if err == nil {
+				if err == nil && n > count {
 					count = n
 				}
 			}
-			switch cmd {
-			case "hex":
-				if i > 0 {
-					num, err := strconv.ParseInt(tokens[i-1], 16, 64)
-					if err == nil {
-						tokens[i-1] = strconv.FormatInt(num, 10)
+			// mark where, the start of the begaining of the inner loop 
+			start := writeIndex - count
+			if start < 0 {
+				start = 0
+			}
+			
+			for j := start; j < writeIndex; j++ {
+				switch strings.ToLower(cmd) {
+				case "hex":
+					num64, err := strconv.ParseInt(tokens[j], 16, 64)
+					if err != nil {
+						log.Fatal(err)
 					}
-
-				}
-				//tokens = append(tokens[:i], tokens[i+1:]...)
-			case "bin":
-				if i > 0 {
-					num, err := strconv.ParseInt(tokens[i-1], 2, 64)
-					if err == nil {
-						tokens[i-1] = strconv.FormatInt(num, 10)
+					tokens[j] = strconv.FormatInt(num64, 10)
+				case "bin":
+					num64, err := strconv.ParseInt(tokens[j], 2, 64)
+					if err != nil {
+						log.Fatal(err)
 					}
-					// -tokens = append(tokens[:i], tokens[i+1:]...)
-				}
-			case "up":
-				for j := 1; j <= count && i-j >= 0; j++ {
-					tokens[i-j] = strings.ToUpper(tokens[i-j])
-					//tokens = append(tokens[:i], tokens[i+1:]...)
-				}
-			case "low":
-				for j := 1; j <= count && i-j >= 0; j++ {
-					tokens[i-j] = strings.ToLower(tokens[i-j])
-					//okens = append(tokens[:i], tokens[i-1:]...)
-				}
-			case "cap":
-				for j := 1; j <= count && i-j >= 0; j++ {
-					rstr := []rune(tokens[i-j])
-					if len(rstr) > 0 && rstr[0] >= 'a' && rstr[0] <= 'z' {
-						rstr[0] -= 32
-					}
-					tokens[i-j] = string(rstr)
-					//tokens = append(tokens[:i], tokens[i+1:]...)
+					tokens[j] = strconv.FormatInt(num64, 10)
+				case "up":
+					tokens[j] = strings.ToUpper(tokens[j])
+				case "low":
+					tokens[j] = strings.ToLower(tokens[j])
+				case "cap":
+					fmt.Println(tokens[j])
+					tokens[j] = strings.ToUpper(tokens[j][:1]) + strings.ToLower(tokens[j][1:])
 				}
 			}
-			tokens = append(tokens[:i], tokens[i+1:]...)
-			i--
+			// skip each case when we hit and use modifier to override the index and value 
+			continue
 		}
-
+		tokens[writeIndex] = tokens[i]
+		writeIndex++
 	}
-	return tokens
+	return tokens[:writeIndex]
 }
